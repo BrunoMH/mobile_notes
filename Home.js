@@ -1,11 +1,41 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native';
+import { Text, View, TextInput, Pressable, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import styles from './styles';
 
-export default function Home({ navigation }) {
+export default function Home({ navigation, notes }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredNotes, setFilteredNotes] = useState(notes);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredNotes(notes);
+    } else {
+      const lowerQuery = searchQuery.toLowerCase();
+      const results = notes.filter(
+        (note) =>
+          (note.title && note.title.toLowerCase().includes(lowerQuery)) ||
+          (note.content && note.content.toLowerCase().includes(lowerQuery))
+      );
+      setFilteredNotes(results);
+    }
+  }, [searchQuery, notes]);
+
   const createNew = () => {
     navigation.navigate('Note');
   };
+
+  const renderNote = ({ item }) => (
+    <Pressable onPress={() => navigation.navigate('Note', { note: item })}>
+      <View style={styles.noteCard}>
+        <Text style={styles.cardTitle}>{item.title || 'Untitled'}</Text>
+        <Text style={styles.cardSnippet}>
+          {item.content ? item.content.slice(0, 40) + '...' : ''}
+        </Text>
+      </View>
+    </Pressable>
+  );
 
   return (
     <View style={styles.container}>
@@ -13,17 +43,23 @@ export default function Home({ navigation }) {
         <Text style={styles.title}>notes</Text>
       </View>
 
-      {/* searcher or notes */}
       <View style={styles.placeholder}>
         <Ionicons name="search" size={20} color="#000" style={styles.icon} />
         <TextInput
           style={styles.inputText}
-          placeholder="Placeholder..."
-          onChangeText={(text) => console.log(text)}
+          placeholder="Search notes..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
         />
       </View>
 
-      {/* Floating button */}
+      <FlatList
+        data={filteredNotes}
+        renderItem={renderNote}
+        keyExtractor={(item, index) => index.toString()}
+        style={{ marginTop: 20 }}
+      />
+
       <View style={styles.addButton}>
         <Pressable style={styles.createNote} onPress={createNew}>
           <Ionicons name="add" size={50} color="#000" />
@@ -34,59 +70,3 @@ export default function Home({ navigation }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 50,
-  },
-  header: {
-    marginTop: 50,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 32,
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  placeholder: {
-    width: 320,
-    height: 50,
-    backgroundColor: '#E0BB00',
-    borderColor: '#69665b',
-    borderWidth: 2,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    paddingHorizontal: 10,
-  },
-  inputText: {
-    flex: 1,
-    width: '100%',
-  },
-  icon: {
-    marginRight: 8,
-  },
-  createNote: {
-    width: 70,
-    height: 70,
-    backgroundColor: '#E0BB00',
-    borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
-  addButton: {
-    position: 'absolute',
-    bottom: 130,
-    right: 30,
-  },
-});
