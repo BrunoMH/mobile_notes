@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Text, View, Pressable, TextInput } from 'react-native';
+import { Text, View, Pressable, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styles from './styles';
 
 export default function Note({ navigation, route, setNotes }) {
   const existingNote = route.params?.note;
   const [title, setTitle] = useState(existingNote?.title || '');
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(existingNote?.content || '');
 
   const goBack = () => {
     const now = new Date();
@@ -29,12 +29,33 @@ export default function Note({ navigation, route, setNotes }) {
     navigation.navigate('Home');
   };
 
+  const deleteNote = () => {
+    if (!existingNote) return;
+
+    Alert.alert(
+      "Delete Note",
+      "Are you sure you want to delete this note?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: () => {
+            setNotes(prev => prev.filter(n => n.date !== existingNote.date));
+            navigation.navigate('Home');
+          } 
+        }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.noteHeader}>
         <Pressable onPress={goBack}>
           <Ionicons name="arrow-back" size={30} color="#fff" style={styles.icon} />
         </Pressable>
+
         <TextInput
           style={styles.noteTitleInput}
           placeholder="New note"
@@ -42,6 +63,12 @@ export default function Note({ navigation, route, setNotes }) {
           value={title}
           onChangeText={setTitle}
         />
+
+        {existingNote && (
+          <Pressable onPress={deleteNote}>
+            <Ionicons name="trash-outline" size={30} color="#fff" style={styles.icon} />
+          </Pressable>
+        )}
       </View>
 
       <View style={styles.noteContainer}>
@@ -59,7 +86,6 @@ export default function Note({ navigation, route, setNotes }) {
           textAlignVertical="top"
         />
       </View>
-
-    </View >
+    </View>
   );
 }
