@@ -69,6 +69,10 @@ export default function Note({ navigation, route, setNotes }) {
           onChangeText={setTitle}
         />
 
+        <Pressable onPress={goBack}>
+          <Ionicons name="save" size={30} color="#fff" style={styles.icon} />
+        </Pressable>
+
         {existingNote && (
           <Pressable onPress={deleteNote}>
             <Ionicons name="trash-outline" size={30} color="#fff" style={styles.icon} />
