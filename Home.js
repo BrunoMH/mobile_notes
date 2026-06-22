@@ -56,7 +56,7 @@ export default function Home({ navigation, notes }) {
       <FlatList
         data={filteredNotes}
         renderItem={renderNote}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.id}
         style={{ marginTop: 20 }}
       />
 
