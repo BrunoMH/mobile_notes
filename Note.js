@@ -14,15 +14,15 @@ export default function Note({ navigation, route, setNotes }) {
     const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const newNote = {
-      id: existingNote?.id || Date.now().toString(),
-      title: title.split(' ')[0] || 'Untitled',
+      id: existingNote?.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title: title || 'Untitled',
       content,
       date: existingNote?.date || `${dateString} | ${timeString}`,
     };
 
     setNotes(prev => {
       if (existingNote) {
-        return prev.map(n => (n.date === existingNote.date ? newNote : n));
+        return prev.map(n => (n.id === existingNote.id ? newNote : n));
       }
       return [newNote, ...prev];
     });
@@ -34,7 +34,7 @@ export default function Note({ navigation, route, setNotes }) {
     if (!existingNote) return;
 
     const confirmDelete = () => {
-      setNotes(prev => prev.filter(n => n.date !== existingNote.date));
+      setNotes(prev => prev.filter(n => n.id !== existingNote.id));
       navigation.navigate('Home');
     };
 
