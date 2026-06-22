@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View, Pressable, TextInput, Alert } from 'react-native';
+import { Text, View, Pressable, TextInput, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styles from './styles';
 
@@ -14,6 +14,7 @@ export default function Note({ navigation, route, setNotes }) {
     const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const newNote = {
+      id: existingNote?.id || Date.now().toString(),
       title: title.split(' ')[0] || 'Untitled',
       content,
       date: existingNote?.date || `${dateString} | ${timeString}`,
@@ -32,21 +33,25 @@ export default function Note({ navigation, route, setNotes }) {
   const deleteNote = () => {
     if (!existingNote) return;
 
-    Alert.alert(
-      "Delete Note",
-      "Are you sure you want to delete this note?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive", 
-          onPress: () => {
-            setNotes(prev => prev.filter(n => n.date !== existingNote.date));
-            navigation.navigate('Home');
-          } 
-        }
-      ]
-    );
+    const confirmDelete = () => {
+      setNotes(prev => prev.filter(n => n.date !== existingNote.date));
+      navigation.navigate('Home');
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to delete this note?')) {
+        confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        "Delete Note",
+        "Are you sure you want to delete this note?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: confirmDelete }
+        ]
+      );
+    }
   };
 
   return (
